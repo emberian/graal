@@ -36,6 +36,10 @@ import jdk.graal.compiler.word.Word;
 
 public abstract class PosixSystemPropertiesSupport extends SystemPropertiesSupport {
 
+    public PosixSystemPropertiesSupport(boolean compatibilityMode) {
+        super(compatibilityMode);
+    }
+
     @Override
     protected String jvmLibName() {
         return "libjvm" + jvmLibSuffix();

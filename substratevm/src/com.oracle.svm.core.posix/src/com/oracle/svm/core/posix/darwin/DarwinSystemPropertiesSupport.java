@@ -24,7 +24,6 @@
  */
 package com.oracle.svm.core.posix.darwin;
 
-import com.oracle.svm.core.jdk.SystemPropertiesSupport;
 import org.graalvm.nativeimage.ImageSingletons;
 import org.graalvm.nativeimage.Platform;
 import org.graalvm.nativeimage.c.function.CLibrary;
@@ -38,6 +37,7 @@ import com.oracle.svm.core.feature.AutomaticallyRegisteredFeature;
 import com.oracle.svm.core.feature.InternalFeature;
 import com.oracle.svm.core.graal.stackvalue.UnsafeStackValue;
 import com.oracle.svm.core.headers.LibC;
+import com.oracle.svm.core.jdk.SystemPropertiesSupport;
 import com.oracle.svm.core.posix.PosixSystemPropertiesSupport;
 import com.oracle.svm.core.posix.headers.Limits;
 import com.oracle.svm.core.posix.headers.Stdlib;
@@ -48,12 +48,17 @@ import com.oracle.svm.core.traits.BuiltinTraits.BuildtimeAccessOnly;
 import com.oracle.svm.core.traits.BuiltinTraits.NoLayeredCallbacks;
 import com.oracle.svm.core.traits.SingletonLayeredInstallationKind.Disallowed;
 import com.oracle.svm.core.traits.SingletonTraits;
+import com.oracle.svm.hosted.NativeImageOptions;
 
 import jdk.graal.compiler.word.Word;
 
 @SingletonTraits(access = AllAccess.class, layeredCallbacks = NoLayeredCallbacks.class, layeredInstallationKind = Disallowed.class)
 @CLibrary(value = "darwin", requireStatic = true)
 public class DarwinSystemPropertiesSupport extends PosixSystemPropertiesSupport {
+
+    public DarwinSystemPropertiesSupport(boolean compatibilityMode) {
+        super(compatibilityMode);
+    }
 
     @Override
     protected String javaIoTmpdirValue() {
@@ -144,7 +149,7 @@ public class DarwinSystemPropertiesSupport extends PosixSystemPropertiesSupport 
 class DarwinSystemPropertiesFeature implements InternalFeature {
     @Override
     public void duringSetup(DuringSetupAccess access) {
-        ImageSingletons.add(RuntimeSystemPropertiesSupport.class, new DarwinSystemPropertiesSupport());
+        ImageSingletons.add(RuntimeSystemPropertiesSupport.class, new DarwinSystemPropertiesSupport(NativeImageOptions.compatibilityMode()));
         ImageSingletons.add(SystemPropertiesSupport.class, (SystemPropertiesSupport) ImageSingletons.lookup(RuntimeSystemPropertiesSupport.class));
     }
 }

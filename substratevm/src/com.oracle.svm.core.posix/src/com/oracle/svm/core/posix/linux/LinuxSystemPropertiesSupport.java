@@ -25,6 +25,7 @@
 package com.oracle.svm.core.posix.linux;
 
 import com.oracle.svm.core.jdk.SystemPropertiesSupport;
+import com.oracle.svm.hosted.NativeImageOptions;
 import org.graalvm.nativeimage.ImageSingletons;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
@@ -47,6 +48,10 @@ import com.oracle.svm.core.traits.SingletonTraits;
 
 @SingletonTraits(access = AllAccess.class, layeredCallbacks = SingleLayer.class, layeredInstallationKind = InitialLayerOnly.class)
 public class LinuxSystemPropertiesSupport extends PosixSystemPropertiesSupport {
+
+    public LinuxSystemPropertiesSupport(boolean compatibilityMode) {
+        super(compatibilityMode);
+    }
 
     @Override
     protected String javaIoTmpdirValue() {
@@ -112,7 +117,7 @@ class LinuxSystemPropertiesFeature implements InternalFeature {
 
     @Override
     public void duringSetup(DuringSetupAccess access) {
-        ImageSingletons.add(RuntimeSystemPropertiesSupport.class, new LinuxSystemPropertiesSupport());
+        ImageSingletons.add(RuntimeSystemPropertiesSupport.class, new LinuxSystemPropertiesSupport(NativeImageOptions.compatibilityMode()));
         ImageSingletons.add(SystemPropertiesSupport.class, (SystemPropertiesSupport) ImageSingletons.lookup(RuntimeSystemPropertiesSupport.class));
     }
 }

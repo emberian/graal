@@ -106,7 +106,7 @@ public class FutureDefaultsOptions {
 
     @APIOption(name = OPTION_NAME, defaultValue = DEFAULT_NAME) //
     @Option(help = "file:doc-files/FutureDefaultsHelp.txt", type = OptionType.User) //
-    static final HostedOptionKey<AccumulatingLocatableMultiOptionValue.Strings> FutureDefaults = new HostedOptionKey<>(
+    public static final HostedOptionKey<AccumulatingLocatableMultiOptionValue.Strings> FutureDefaults = new HostedOptionKey<>(
                     AccumulatingLocatableMultiOptionValue.Strings.buildWithCommaDelimiter());
 
     private static String getOptionHelpText() {
