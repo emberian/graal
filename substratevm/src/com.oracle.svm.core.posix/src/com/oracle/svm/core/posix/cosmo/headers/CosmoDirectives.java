@@ -34,6 +34,7 @@ import java.util.List;
 
 public class CosmoDirectives implements CContext.Directives {
     private static final String[] commonLibs = new String[]{
+                    "<graal_compat.h>",
                     "<dlfcn.h>",
                     "<dirent.h>",
                     "<fcntl.h>",

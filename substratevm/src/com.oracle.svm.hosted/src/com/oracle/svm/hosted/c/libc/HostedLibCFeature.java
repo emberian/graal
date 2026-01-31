@@ -43,7 +43,7 @@ import com.oracle.svm.core.util.UserError;
 public class HostedLibCFeature implements InternalFeature {
     @Override
     public boolean isInConfiguration(IsInConfigurationAccess access) {
-        return HostedLibCBase.isPlatformEquivalent(Platform.LINUX.class);
+        return HostedLibCBase.isPlatformEquivalent(Platform.LINUX.class) || SubstrateOptions.UseLibC.getValue().equals("cosmo");
     }
 
     @Override

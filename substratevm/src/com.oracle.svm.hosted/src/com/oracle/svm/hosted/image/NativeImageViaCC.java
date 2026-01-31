@@ -99,16 +99,26 @@ public abstract class NativeImageViaCC extends NativeImage {
             write(debug, objFilePath);
             if (LibCBase.targetLibCIs(CosmoLibC.class)) {
                 try {
-                    // TODO: get fixupobj from $PATH
+                    // Get fixupobj from the same directory as the compiler
+                    String compilerPath = SubstrateOptions.CCompilerPath.getValue();
+                    Path fixupobjPath;
+                    if (compilerPath != null && !compilerPath.isEmpty()) {
+                        fixupobjPath = Path.of(compilerPath).getParent().resolve("fixupobj");
+                    } else {
+                        fixupobjPath = Path.of("fixupobj");
+                    }
                     ArrayList<String> fixupList = new ArrayList<>();
-                    fixupList.add("fixupobj");
+                    fixupList.add(fixupobjPath.toAbsolutePath().toString());
                     fixupList.add(objFilePath.toAbsolutePath().toString());
                     ProcessBuilder fixupCommand = FileUtils.prepareCommand(fixupList, tempDirectory);
                     fixupCommand.redirectErrorStream(true);
                     FileUtils.traceCommand(fixupCommand);
-                    fixupCommand.start();
-                    System.out.println("successfully ran fixupobj");
-                } catch (IOException e) {
+                    Process fixupProcess = fixupCommand.start();
+                    int exitCode = fixupProcess.waitFor();
+                    if (exitCode != 0) {
+                        throw new RuntimeException("fixupobj exited with code " + exitCode);
+                    }
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException("there was an error running fixupobj:" + e);
                 }
             }

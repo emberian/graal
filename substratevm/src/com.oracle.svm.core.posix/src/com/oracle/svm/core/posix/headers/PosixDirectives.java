@@ -96,7 +96,8 @@ public class PosixDirectives implements CContext.Directives {
 
     @Override
     public List<String> getOptions() {
-        if (Platform.includedIn(Platform.DARWIN.class)) {
+        // Don't add -ObjC for cosmo cross-compilation from Darwin
+        if (Platform.includedIn(Platform.DARWIN.class) && !SubstrateOptions.UseLibC.getValue().equals("cosmo")) {
             return Collections.singletonList("-ObjC");
         }
         return Collections.emptyList();

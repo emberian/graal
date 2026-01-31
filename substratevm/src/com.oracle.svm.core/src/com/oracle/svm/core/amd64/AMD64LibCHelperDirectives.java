@@ -27,11 +27,17 @@ package com.oracle.svm.core.amd64;
 import java.util.Collections;
 import java.util.List;
 
+import org.graalvm.nativeimage.Platform;
 import org.graalvm.nativeimage.c.CContext;
 
 import com.oracle.svm.core.c.ProjectHeaderFile;
 
 public class AMD64LibCHelperDirectives implements CContext.Directives {
+
+    @Override
+    public boolean isInConfiguration() {
+        return Platform.includedIn(Platform.AMD64.class);
+    }
 
     @Override
     public List<String> getHeaderFiles() {

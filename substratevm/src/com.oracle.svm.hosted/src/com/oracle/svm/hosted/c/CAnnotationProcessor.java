@@ -39,6 +39,8 @@ import org.graalvm.nativeimage.Platform;
 
 import com.oracle.svm.core.SubstrateOptions;
 import com.oracle.svm.core.SubstrateUtil;
+import com.oracle.svm.core.c.libc.CosmoLibC;
+import com.oracle.svm.core.c.libc.LibCBase;
 import com.oracle.svm.core.util.InterruptImageBuilding;
 import com.oracle.svm.core.util.UserError;
 import com.oracle.svm.core.util.VMError;
@@ -128,7 +130,29 @@ public class CAnnotationProcessor {
     private void makeQuery(CAnnotationProcessorCache cache, String binaryName) {
         Process printingProcess = null;
         try {
-            ProcessBuilder pb = new ProcessBuilder().command(binaryName).directory(tempDirectory.toFile());
+            ProcessBuilder pb;
+            // When cross-compiling for cosmo on macOS host, use APE loader to run the query binary
+            boolean hostIsDarwin = System.getProperty("os.name", "").toLowerCase().contains("mac");
+            if (LibCBase.targetLibCIs(CosmoLibC.class) && hostIsDarwin) {
+                String apeLoader = System.getenv("APE_LOADER");
+                if (apeLoader == null || apeLoader.isEmpty()) {
+                    // Try to find APE loader relative to compiler path
+                    String compilerPath = SubstrateOptions.CCompilerPath.getValue();
+                    if (compilerPath != null && !compilerPath.isEmpty()) {
+                        Path loaderPath = Path.of(compilerPath).getParent().resolve("ape-loader");
+                        if (Files.exists(loaderPath)) {
+                            apeLoader = loaderPath.toString();
+                        }
+                    }
+                }
+                if (apeLoader != null && !apeLoader.isEmpty()) {
+                    pb = new ProcessBuilder().command(apeLoader, binaryName).directory(tempDirectory.toFile());
+                } else {
+                    pb = new ProcessBuilder().command(binaryName).directory(tempDirectory.toFile());
+                }
+            } else {
+                pb = new ProcessBuilder().command(binaryName).directory(tempDirectory.toFile());
+            }
             printingProcess = pb.start();
             try (InputStream is = printingProcess.getInputStream()) {
                 List<String> lines = QueryResultParser.parse(nativeLibs, codeInfo, is);
